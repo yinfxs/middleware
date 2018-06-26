@@ -40,6 +40,7 @@ func (m *Middleware) createContext(data M) *Context {
 func (m *Middleware) Flow(data M) {
 	ctx := m.createContext(data)
 	ctx.Next()
+	m.pool.Put(ctx)
 }
 
 // New 创建中间件集合
