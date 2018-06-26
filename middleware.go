@@ -9,9 +9,10 @@ type M map[string]interface{}
 
 // Context 中间件上下文
 type Context struct {
-	Data  M
-	index int8
-	Next  func()
+	Data     M
+	Handlers []func(ctx *Context)
+	index    int8
+	Next     func()
 }
 
 // Middleware 中间件类型
@@ -48,13 +49,14 @@ func New() *Middleware {
 	m := &Middleware{}
 	m.pool.New = func() interface{} {
 		ctx := &Context{
-			index: -1,
-			Data:  M{},
+			index:    -1,
+			Data:     M{},
+			Handlers: m.arr[:],
 		}
 		ctx.Next = func() {
 			ctx.index++
-			if ctx.index < int8(len(m.arr)) {
-				fn := m.arr[ctx.index]
+			if ctx.index < int8(len(ctx.Handlers)) {
+				fn := ctx.Handlers[ctx.index]
 				if fn != nil {
 					fn(ctx)
 				}
