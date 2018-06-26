@@ -74,7 +74,7 @@ $ go run main.go
 
 ## Examples
 
-### Define a middleware
+### Define a handler
 
 ```go
 func(c *middleware.Context) {
