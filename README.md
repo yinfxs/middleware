@@ -84,33 +84,7 @@ func(c *middleware.Context) {
 
 ### Extending Context
 
-#### Define a custom context
-
-```go
-type CustomContext struct {
-  middleware.Context
-}
-
-func (c *CustomContext) Foo() {
-  fmt.Println("foo")
-}
-
-func (c *CustomContext) Bar() {
-  fmt.Println("bar")
-}
-```
-
-#### Use in handler
-
-```go
-m := middleware.New()
-m.Add(func(c *CustomContext) {
-    c.Foo()
-    c.Next()
-    c.Bar()
-})
-m.Flow(nil)
-```
+If you want to define a custom `Context`, fork it!
 
 ## Contributing
 
