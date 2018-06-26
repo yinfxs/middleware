@@ -72,12 +72,44 @@ $ go run main.go
 2018/06/25 18:23:47 handler a-out: 102
 ```
 
-## Define a middleware
+## Examples
+
+### Define a middleware
 
 ```go
 func(c *middleware.Context) {
   c.Next()
 }
+```
+
+### Extending Context
+
+#### Define a custom context
+
+```go
+type CustomContext struct {
+  middleware.Context
+}
+
+func (c *CustomContext) Foo() {
+  fmt.Println("foo")
+}
+
+func (c *CustomContext) Bar() {
+  fmt.Println("bar")
+}
+```
+
+#### Use in handler
+
+```go
+m := middleware.New()
+m.Add(func(c *CustomContext) {
+    c.Foo()
+    c.Next()
+    c.Bar()
+})
+m.Flow(nil)
 ```
 
 ## Contributing
