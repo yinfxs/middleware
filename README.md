@@ -14,12 +14,15 @@ go get github.com/yinfxs/middleware
 import "github.com/yinfxs/middleware"
 ```
 
-## Quick Start
+## Define a middleware
 
-```sh
-# assume the following codes in example.go file
-$ cat main.go
+```go
+func(c *middleware.Context) {
+  c.Next()
+}
 ```
+
+## Usage
 
 ```go
 package main
@@ -62,7 +65,6 @@ func main() {
 ```
 
 ```sh
-# run main.go
 $ go run main.go
 2018/06/25 18:23:47 handler a-in: 100
 2018/06/25 18:23:47 handler b-in: 101
@@ -72,17 +74,7 @@ $ go run main.go
 2018/06/25 18:23:47 handler a-out: 102
 ```
 
-## Examples
-
-### Define a handler
-
-```go
-func(c *middleware.Context) {
-  c.Next()
-}
-```
-
-### Custom Context
+## Custom Context
 
 ```go
 package main
@@ -103,7 +95,7 @@ type CustomContext struct {
 
 // App 应用
 type App struct {
-  mw   *middleware.Middleware
+  mw   *middleware.Application
   pool sync.Pool
   c    *CustomContext
 }

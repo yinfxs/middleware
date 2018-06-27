@@ -15,19 +15,19 @@ type Context struct {
 	Next     func()
 }
 
-// Middleware 中间件类型
-type Middleware struct {
+// Application 中间件应用
+type Application struct {
 	pool sync.Pool
 	arr  []func(ctx *Context)
 }
 
 // Add 新增中间件
-func (m *Middleware) Add(fn func(ctx *Context)) {
+func (m *Application) Add(fn func(ctx *Context)) {
 	m.arr = append(m.arr, fn)
 }
 
 // createContext 获取上下文对象
-func (m *Middleware) createContext() *Context {
+func (m *Application) createContext() *Context {
 	c := m.pool.Get().(*Context)
 	c.Data = M{}
 	c.index = -1
@@ -35,7 +35,7 @@ func (m *Middleware) createContext() *Context {
 }
 
 // Flow 流转中间件
-func (m *Middleware) Flow(ctxReceiver func(ctx *Context)) {
+func (m *Application) Flow(ctxReceiver func(ctx *Context)) {
 	ctx := m.createContext()
 	if ctxReceiver != nil {
 		ctxReceiver(ctx)
@@ -44,9 +44,9 @@ func (m *Middleware) Flow(ctxReceiver func(ctx *Context)) {
 	m.pool.Put(ctx)
 }
 
-// New 创建中间件集合
-func New() *Middleware {
-	m := &Middleware{}
+// New 创建中间件应用
+func New() *Application {
+	m := &Application{}
 	m.pool.New = func() interface{} {
 		ctx := &Context{
 			index:    -1,
