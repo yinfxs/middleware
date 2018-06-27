@@ -82,34 +82,88 @@ func(c *middleware.Context) {
 }
 ```
 
-### Extending Context
-
-#### Define a custom context
+### Custom Context
 
 ```go
+package main
+
+import (
+  "log"
+  "sync"
+
+  "github.com/yinfxs/middleware"
+)
+
+// CustomContext 自定义上下文对象
 type CustomContext struct {
-  middleware.Context
+  context *middleware.Context
+  Next    func()
+  Data    int8
 }
 
-func (c *CustomContext) Foo() {
-  fmt.Println("foo")
+// App 应用
+type App struct {
+  mw   *middleware.Middleware
+  pool sync.Pool
+  c    *CustomContext
 }
 
-func (c *CustomContext) Bar() {
-  fmt.Println("bar")
+// Use 应用
+func (a *App) Use(fn func(ctx *CustomContext)) {
+  a.mw.Add(func(ctx *middleware.Context) {
+    fn(a.c)
+  })
 }
-```
 
-#### Use in handler
+// HanldeFlow 应用
+func (a *App) HanldeFlow() {
+  a.mw.Flow(func(ctx *middleware.Context) {
+    c := a.pool.Get().(*CustomContext)
+    c.context = ctx
+    c.Next = ctx.Next
+    c.Data = -1
+    a.c = c
+  })
+  a.pool.Put(a.c)
+}
 
-```go
-m := middleware.New()
-m.Add(func(c *CustomContext) {
-    c.Foo()
+// New 创建应用实例
+func New() *App {
+  a := &App{
+    mw: middleware.New(),
+  }
+  a.pool.New = func() interface{} {
+    c := &CustomContext{Data: -1}
+    return c
+  }
+  return a
+}
+
+func main() {
+  m := New()
+  // handler a
+  m.Use(func(c *CustomContext) {
+    c.Data = 100
+    log.Printf("handler a-in: %v\n", c.Data)
     c.Next()
-    c.Bar()
-})
-m.Flow(nil)
+    log.Printf("handler a-out: %v\n", c.Data)
+  })
+  // handler b
+  m.Use(func(c *CustomContext) {
+    c.Data = c.Data + 1
+    log.Printf("handler b-in: %v\n", c.Data)
+    c.Next()
+    log.Printf("handler b-out: %v\n", c.Data)
+  })
+  // handler c
+  m.Use(func(c *CustomContext) {
+    c.Data = c.Data + 1
+    log.Printf("handler c-in: %v\n", c.Data)
+    c.Next()
+    log.Printf("handler c-out: %v\n", c.Data)
+  })
+  m.HanldeFlow()
+}
 ```
 
 ## Contributing

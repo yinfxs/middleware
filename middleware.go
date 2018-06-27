@@ -27,19 +27,19 @@ func (m *Middleware) Add(fn func(ctx *Context)) {
 }
 
 // createContext 获取上下文对象
-func (m *Middleware) createContext(data M) *Context {
+func (m *Middleware) createContext() *Context {
 	c := m.pool.Get().(*Context)
-	if data == nil {
-		data = M{}
-	}
-	c.Data = data
+	c.Data = M{}
 	c.index = -1
 	return c
 }
 
 // Flow 流转中间件
-func (m *Middleware) Flow(data M) {
-	ctx := m.createContext(data)
+func (m *Middleware) Flow(ctxReceiver func(ctx *Context)) {
+	ctx := m.createContext()
+	if ctxReceiver != nil {
+		ctxReceiver(ctx)
+	}
 	ctx.Next()
 	m.pool.Put(ctx)
 }
